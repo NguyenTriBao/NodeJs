@@ -9,7 +9,7 @@ let createNewUser = async (data) => {
             await db.User.create({
                 email: data.email,
                 password: hashPasswordFromBcrypt,
-                firstName: data.firstname,
+                firstName: data.firstName,
                 lastName: data.lastName,
                 address: data.address,
                 phoneNumber: data.phoneNumber,
@@ -88,16 +88,14 @@ let updateUserData = (userData) => {
 let deleteUserData = async (userId) => {
     return new Promise(async (resolve, reject) => {
         try {
-            // let user = await db.User.findOne({
-            //     where: { id: userId },
-            // });
-            // if(user){
-            //     await user.destroy();
-            // }
-            await db.User.destroy({
+            let user = await db.User.findOne({
+                where: { id: userId },
+            });
+            if(user){
+                await db.User.destroy({
                     where: { id: userId },
                 });
-                
+            }    
             resolve();
           
         } catch (e) {
