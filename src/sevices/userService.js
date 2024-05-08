@@ -108,7 +108,7 @@ let createNewUser = (data) => {
             if(check === true){
                 resolve({
                     errCode: 1,
-                    message: 'Your email already is used, plz try another email'
+                    errMessage: 'Your email already is used, plz try another email'
                 })
             }
             else{
@@ -130,7 +130,7 @@ let createNewUser = (data) => {
             }
            
         } catch (e) {
-
+            reject(e);
         }
     })
 }
@@ -151,7 +151,7 @@ let deleteUser = (userId) => {
                 })
                 resolve({
                     errCode: 0,
-                    errMessage: `the user is Deleted`
+                    errMessage: 'the user is Deleted'
                 })
         } catch (e) {
             reject(e);
