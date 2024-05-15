@@ -1,5 +1,6 @@
 import { Model, where } from 'sequelize';
 import db from '../models/index';
+import { raw } from 'body-parser';
 
 let getTopDoctorHomeService = (limitInput) => {
     return new Promise(async (resolve, reject) => {
@@ -10,7 +11,7 @@ let getTopDoctorHomeService = (limitInput) => {
                 where: { roleId: 'R2' },
                 order: [['createdAt', 'DESC']],
                 attributes: {
-                    exclude: ['password'], 
+                    exclude: ['password'],
                 },
                 include: [
                     { model: allcode, as: 'positionData', attributes: ['valueEn', 'valueVi'] },
@@ -31,40 +32,40 @@ let getTopDoctorHomeService = (limitInput) => {
 
     })
 }
-let getAllDoctors = () =>{
-    return new Promise(async(resolve, reject) => {
+let getAllDoctors = () => {
+    return new Promise(async (resolve, reject) => {
         try {
             let doctors = await db.User.findAll({
                 where: {
                     roleId: 'R2'
                 },
-                attributes:{
-                    exclude: ['password','image']
+                attributes: {
+                    exclude: ['password', 'image']
                 }
             })
             resolve({
                 errCode: 0,
                 data: doctors
             })
-            
+
         } catch (e) {
-           reject(e) 
+            reject(e)
         }
     })
 }
 
 let saveDetailInforDoctor = (inputData) => {
-    return new Promise( async(resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         try {
-            if(!inputData.doctorId || !inputData.contentHTML || !inputData.contentMarkdown){
+            if (!inputData.doctorId || !inputData.contentHTML || !inputData.contentMarkdown) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing parameter'
                 })
             }
-            else{
+            else {
                 await db.Markdown.create({
-                    contentHTML : inputData.contentHTML,
+                    contentHTML: inputData.contentHTML,
                     contentMarkDown: inputData.contentMarkdown,
                     description: inputData.description,
                     doctorId: inputData.doctorId
@@ -74,8 +75,49 @@ let saveDetailInforDoctor = (inputData) => {
                     errMessage: 'Save infor doctor succeed!'
                 })
             }
-            
-            
+
+
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
+let getDetailDoctorByIdService = (inputId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!inputId) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!'
+                })
+            }
+            else {
+                let data = await db.User.findOne({
+                    where: {
+                        id: inputId
+                    },
+                    attributes: {
+                        exclude: ['password']
+                    },
+                    include: [
+                        {
+                            model: db.Markdown,
+                            attributes: ['description', 'contentHTML', 'contentMarkDown']
+                        },
+                        { model: db.Allcode, as: 'positionData', attributes: ['valueEn', 'valueVi'] },
+                    ],
+                    raw: false,
+                    nest: true
+                })
+                if(data && data.image){
+                    data.image = new Buffer(data.image, 'base64').toString('binary');
+                }
+                if(!data) data = {};
+                resolve({
+                    errCode: 0,
+                    data: data
+                })
+            }
         } catch (e) {
             reject(e)
         }
@@ -85,4 +127,5 @@ module.exports = {
     getTopDoctorHomeService: getTopDoctorHomeService,
     getAllDoctors: getAllDoctors,
     saveDetailInforDoctor: saveDetailInforDoctor,
+    getDetailDoctorByIdService: getDetailDoctorByIdService,
 }
