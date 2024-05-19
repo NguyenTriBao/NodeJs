@@ -1,6 +1,10 @@
 import { Model, where } from 'sequelize';
 import db from '../models/index';
 import { raw } from 'body-parser';
+require('dotenv').config();
+import _ from 'lodash';
+
+const MAX_NUMBER_SCHEDULE = process.env.MAX_NUMBER_SCHEDULE;
 
 let getTopDoctorHomeService = (limitInput) => {
     return new Promise(async (resolve, reject) => {
@@ -57,14 +61,14 @@ let getAllDoctors = () => {
 let saveDetailInforDoctor = (inputData) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!inputData.doctorId || !inputData.contentHTML || !inputData.contentMarkdown  || !inputData.action) {
+            if (!inputData.doctorId || !inputData.contentHTML || !inputData.contentMarkdown || !inputData.action) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing parameter'
                 })
             }
             else {
-                if(inputData.action === 'CREATE'){
+                if (inputData.action === 'CREATE') {
                     await db.Markdown.create({
                         contentHTML: inputData.contentHTML,
                         contentMarkDown: inputData.contentMarkdown,
@@ -72,14 +76,14 @@ let saveDetailInforDoctor = (inputData) => {
                         doctorId: inputData.doctorId
                     })
                 }
-                else if(inputData.action === 'EDIT'){
+                else if (inputData.action === 'EDIT') {
                     let doctorMarkdown = await db.Markdown.findOne({
-                        where : {
+                        where: {
                             doctorId: inputData.doctorId
                         },
-                        raw : false
+                        raw: false
                     })
-                    if(doctorMarkdown){
+                    if (doctorMarkdown) {
                         doctorMarkdown.contentHTML = inputData.contentHTML;
                         doctorMarkdown.contentMarkDown = inputData.contentMarkdown;
                         doctorMarkdown.description = inputData.description;
@@ -87,7 +91,7 @@ let saveDetailInforDoctor = (inputData) => {
                         await doctorMarkdown.save();
                     }
                 }
-               
+
                 resolve({
                     errCode: 0,
                     errMessage: 'Save infor doctor succeed!'
@@ -127,10 +131,10 @@ let getDetailDoctorByIdService = (inputId) => {
                     raw: false,
                     nest: true
                 })
-                if(data && data.image){
+                if (data && data.image) {
                     data.image = new Buffer(data.image, 'base64').toString('binary');
                 }
-                if(!data) data = {};
+                if (!data) data = {};
                 resolve({
                     errCode: 0,
                     data: data
@@ -141,9 +145,66 @@ let getDetailDoctorByIdService = (inputId) => {
         }
     })
 }
+let bulkCreateScheduleService = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            if (!data.arrSchedule || !data.doctorId || !data.date) {
+                resolve({
+                    errCode: 1,
+                    errMessage: "Missing required parameter!!!!"
+                })
+            }
+            else {
+                let schedule = data.arrSchedule;
+                if (schedule && schedule.length > 0) {
+                    schedule = schedule.map(item => {
+                        item.maxNumber = MAX_NUMBER_SCHEDULE
+                        return item;
+                    })
+                }
+                //get existing data
+                let existing = await db.Schedule.findAll({
+                    where: {
+                        doctorId: data.doctorId,
+                        date: data.date,
+                    },
+                    attributes: [
+                        'timeType', 'date', 'doctorId', 'maxNumber'
+                    ],
+                })
+                //convert date
+                if (existing && existing.length > 0) {
+                    existing = existing.map(item => {
+                        item.date = new Date(item.date).getTime();
+                        return item;
+                    })
+                }
+                //compare difference
+                let toCreate = _.differenceWith(schedule, existing, (a, b) => {
+                    return a.timeType === b.timeType && a.date === b.date;
+                })
+                console.log("check compare: ",toCreate);
+                //create data
+                if (toCreate && toCreate.length > 0) {
+                    await db.Schedule.bulkCreate(toCreate);
+                }
+
+                resolve({
+                    errCode: 0,
+                    errMessage: 'OK'
+                })
+            }
+
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
 module.exports = {
     getTopDoctorHomeService: getTopDoctorHomeService,
     getAllDoctors: getAllDoctors,
     saveDetailInforDoctor: saveDetailInforDoctor,
     getDetailDoctorByIdService: getDetailDoctorByIdService,
+    bulkCreateScheduleService: bulkCreateScheduleService,
 }
