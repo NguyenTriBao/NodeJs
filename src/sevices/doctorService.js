@@ -173,16 +173,10 @@ let bulkCreateScheduleService = (data) => {
                         'timeType', 'date', 'doctorId', 'maxNumber'
                     ],
                 })
-                //convert date
-                if (existing && existing.length > 0) {
-                    existing = existing.map(item => {
-                        item.date = new Date(item.date).getTime();
-                        return item;
-                    })
-                }
+               
                 //compare difference
                 let toCreate = _.differenceWith(schedule, existing, (a, b) => {
-                    return a.timeType === b.timeType && a.date === b.date;
+                    return a.timeType === b.timeType && +a.date === +b.date;
                 })
                 console.log("check compare: ",toCreate);
                 //create data
@@ -215,7 +209,11 @@ let getScheduleByDateService = (doctorId, date) => {
                         doctorId :doctorId,
                         date: date
                     },
-                    raw: false
+                    include: [
+                        { model: db.Allcode, as: 'timeTypeData', attributes: ['valueEn', 'valueVi'] },
+                    ],
+                    raw: true,
+                    nest: true,
                 })
                 if(!datSchedule){
                     datSchedule = []
