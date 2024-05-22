@@ -61,13 +61,19 @@ let getAllDoctors = () => {
 let saveDetailInforDoctor = (inputData) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!inputData.doctorId || !inputData.contentHTML || !inputData.contentMarkdown || !inputData.action) {
+
+            if (!inputData.doctorId || !inputData.contentHTML || !inputData.contentMarkdown || !inputData.action
+                || !inputData.selectedPrice || !inputData.selectedPayment || !inputData.selectedProvince
+                || !inputData.nameClinic || !inputData.addressClinic || !inputData.note
+
+            ) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing parameter'
                 })
             }
             else {
+                //upsert to markdown
                 if (inputData.action === 'CREATE') {
                     await db.Markdown.create({
                         contentHTML: inputData.contentHTML,
@@ -91,7 +97,36 @@ let saveDetailInforDoctor = (inputData) => {
                         await doctorMarkdown.save();
                     }
                 }
-
+                //upsert to Doctor-infor
+                let doctorInfor = await db.Doctor_Infor.findOne({
+                    where: {
+                        doctorId: inputData.doctorId
+                    },
+                    raw: false
+                })
+                if (doctorInfor) {
+                    //update
+                    doctorInfor.doctorId = inputData.doctorId;
+                    doctorInfor.priceId = inputData.selectedPrice;
+                    doctorInfor.paymentId = inputData.selectedPayment;
+                    doctorInfor.provinceId = inputData.selectedProvince;
+                    doctorInfor.addressClinic = inputData.addressClinic;
+                    doctorInfor.nameClinic = inputData.nameClinic;
+                    doctorInfor.note = inputData.note;
+                    await doctorInfor.save();
+                }
+                else {
+                    //create
+                    await db.Doctor_Infor.create({
+                        doctorId: inputData.doctorId,
+                        priceId: inputData.selectedPrice,
+                        paymentId: inputData.selectedPayment,
+                        provinceId: inputData.selectedProvince,
+                        addressClinic: inputData.addressClinic,
+                        nameClinic: inputData.nameClinic,
+                        note: inputData.note
+                    })
+                }
                 resolve({
                     errCode: 0,
                     errMessage: 'Save infor doctor succeed!'
@@ -173,12 +208,12 @@ let bulkCreateScheduleService = (data) => {
                         'timeType', 'date', 'doctorId', 'maxNumber'
                     ],
                 })
-               
+
                 //compare difference
                 let toCreate = _.differenceWith(schedule, existing, (a, b) => {
                     return a.timeType === b.timeType && +a.date === +b.date;
                 })
-                console.log("check compare: ",toCreate);
+                console.log("check compare: ", toCreate);
                 //create data
                 if (toCreate && toCreate.length > 0) {
                     await db.Schedule.bulkCreate(toCreate);
@@ -196,17 +231,17 @@ let bulkCreateScheduleService = (data) => {
     })
 }
 let getScheduleByDateService = (doctorId, date) => {
-    return new Promise (async(resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         try {
-            if(!doctorId || !date){
+            if (!doctorId || !date) {
                 resolve({
                     errCode: 1,
                     errMessage: "Missing required parameters!!"
                 })
-            }else{
+            } else {
                 let datSchedule = await db.Schedule.findAll({
-                    where:{
-                        doctorId :doctorId,
+                    where: {
+                        doctorId: doctorId,
                         date: date
                     },
                     include: [
@@ -215,7 +250,7 @@ let getScheduleByDateService = (doctorId, date) => {
                     raw: true,
                     nest: true,
                 })
-                if(!datSchedule){
+                if (!datSchedule) {
                     datSchedule = []
                 }
                 resolve({
@@ -223,7 +258,7 @@ let getScheduleByDateService = (doctorId, date) => {
                     data: datSchedule
                 })
             }
-            
+
         } catch (e) {
             reject(e)
         }
