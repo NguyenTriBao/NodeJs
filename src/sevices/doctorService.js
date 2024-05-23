@@ -2,7 +2,7 @@ import { Model, where } from 'sequelize';
 import db from '../models/index';
 import { raw } from 'body-parser';
 require('dotenv').config();
-import _, { reject } from 'lodash';
+import _, { includes, reject } from 'lodash';
 
 const MAX_NUMBER_SCHEDULE = process.env.MAX_NUMBER_SCHEDULE;
 
@@ -162,6 +162,19 @@ let getDetailDoctorByIdService = (inputId) => {
                             attributes: ['description', 'contentHTML', 'contentMarkDown']
                         },
                         { model: db.Allcode, as: 'positionData', attributes: ['valueEn', 'valueVi'] },
+                        {
+                            model: db.Doctor_Infor,
+                            attributes:{
+                                exclude: ['id','doctorId'] 
+                            },
+                            include: [
+                               { model: db.Allcode, as: 'priceTypeData', attributes: ['valueEn', 'valueVi'] },
+                               { model: db.Allcode, as: 'paymentTypeData', attributes: ['valueEn', 'valueVi'] },
+                               { model: db.Allcode, as: 'provinceTypeData', attributes: ['valueEn', 'valueVi'] }
+                            ]
+                         
+                            //attributes: ['description', 'contentHTML', 'contentMarkDown']
+                        },
                     ],
                     raw: false,
                     nest: true
