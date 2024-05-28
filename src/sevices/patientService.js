@@ -15,11 +15,14 @@ let postBookApointmentService = (data) => {
                 })
             }
             else {
+
+                
                 await emailService.sendSimpleEmail({
                     receiverEmail: data.email,
-                    patientName: 'fullname Patient',
-                    time: 'time',
-                    doctorName: "Nguyen Tri Bao",
+                    patientName: data.fullName,
+                    time: data.timeString,
+                    doctorName: data.doctorName,
+                    language: data.language,
                     redirectLink:"https://www.facebook.com/tribao05?locale=vi_VN"
                 })
 
