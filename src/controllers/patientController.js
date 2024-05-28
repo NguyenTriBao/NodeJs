@@ -6,6 +6,7 @@ let postBookApointment = async (req, res) => {
         return res.status(200).json(
             response
         )
+        await emailService.sendSimpleEmail()
     } catch (e) {
         console.log(e);
         return res.status(200).json({

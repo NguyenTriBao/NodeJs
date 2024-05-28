@@ -3,6 +3,7 @@ import db from '../models/index';
 import { raw } from 'body-parser';
 require('dotenv').config();
 import _, { includes, reject } from 'lodash';
+import emailService from './emailService';
 
 let postBookApointmentService = (data) => {
     return new Promise(async (resolve, reject) => {
@@ -14,6 +15,14 @@ let postBookApointmentService = (data) => {
                 })
             }
             else {
+                await emailService.sendSimpleEmail({
+                    receiverEmail: data.email,
+                    patientName: 'fullname Patient',
+                    time: 'time',
+                    doctorName: "Nguyen Tri Bao",
+                    redirectLink:"https://www.facebook.com/tribao05?locale=vi_VN"
+                })
+
                 let user = await db.User.findOrCreate({
                     where: { email: data.email },
                     defaults: {
