@@ -129,7 +129,7 @@ let saveDetailInforDoctor = (inputData) => {
                     doctorInfor.nameClinic = inputData.nameClinic;
                     doctorInfor.note = inputData.note,
                         doctorInfor.specialtyId = inputData.specialtyId,
-                        // doctorInfor.clinicId = inputData.clinicId
+                        doctorInfor.clinicId = inputData.clinicId
                         await doctorInfor.save();
                 }
                 else {
@@ -143,7 +143,7 @@ let saveDetailInforDoctor = (inputData) => {
                         nameClinic: inputData.nameClinic,
                         note: inputData.note,
                         specialtyId: inputData.specialtyId,
-                        //clinicId : inputData.clinicId
+                        clinicId : inputData.clinicId
                     })
                 }
                 resolve({

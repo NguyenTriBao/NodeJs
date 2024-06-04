@@ -1,7 +1,7 @@
-import specialtyService from '../sevices/specialtyService'
-let createNewSpecialty = async (req, res) => {
+import clinicService from "../sevices/clinicService"
+let createNewClinic = async (req, res) => {
     try {
-        let response = await specialtyService.createNewSpecialtyService(req.body)
+        let response = await clinicService.createNewClinicService(req.body)
         return res.status(200).json(
             response
         )
@@ -13,9 +13,9 @@ let createNewSpecialty = async (req, res) => {
         })
     }
 }
-let getAllSpecialties = async (req, res) => {
+let getAllClinic = async (req, res) => {
     try {
-        let response = await specialtyService.getAllSpecialtiesService();
+        let response = await clinicService.getAllClinicService();
         return res.status(200).json(
             response
         )
@@ -27,9 +27,9 @@ let getAllSpecialties = async (req, res) => {
         })
     }
 }
-let getDetailSpecialty = async (req, res) => {
+let getDetailClinic = async (req,res) => {
     try {
-        let response = await specialtyService.getDetailSpecialtyService(req.query.id, req.query.location);
+        let response = await clinicService.getDetailClinicService(req.query.id);
         return res.status(200).json(
             response
         )
@@ -42,7 +42,7 @@ let getDetailSpecialty = async (req, res) => {
     }
 }
 module.exports = {
-    createNewSpecialty: createNewSpecialty,
-    getAllSpecialties: getAllSpecialties,
-    getDetailSpecialty: getDetailSpecialty,
+    createNewClinic: createNewClinic,
+    getAllClinic: getAllClinic,
+    getDetailClinic: getDetailClinic,
 }
