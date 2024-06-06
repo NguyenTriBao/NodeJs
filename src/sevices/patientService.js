@@ -13,7 +13,9 @@ let buildURLEmail = (doctorId, token) => {
 let postBookApointmentService = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.email && !data.doctorId && !data.date && !data.timeType) {
+            if (!data.email && !data.doctorId && !data.date && !data.timeType &&
+                !data.fullName && !data.address && !data.gender
+            ) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required parameter!'
@@ -36,7 +38,10 @@ let postBookApointmentService = (data) => {
                     where: { email: data.email },
                     defaults: {
                         email: data.email,
-                        roleId: 'R3'
+                        roleId: 'R3',
+                        address: data.address,
+                        firstName: data.fullName,
+                        gender: data.gender
                     }
                 });
                 if (user && user[0]) {
@@ -102,7 +107,9 @@ let verifyBookApointmentService = (data) => {
         }
     })
 }
+
 module.exports = {
     postBookApointmentService: postBookApointmentService,
     verifyBookApointmentService: verifyBookApointmentService,
+
 }

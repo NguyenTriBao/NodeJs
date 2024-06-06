@@ -130,7 +130,7 @@ let saveDetailInforDoctor = (inputData) => {
                     doctorInfor.note = inputData.note,
                         doctorInfor.specialtyId = inputData.specialtyId,
                         doctorInfor.clinicId = inputData.clinicId
-                        await doctorInfor.save();
+                    await doctorInfor.save();
                 }
                 else {
                     //create
@@ -143,7 +143,7 @@ let saveDetailInforDoctor = (inputData) => {
                         nameClinic: inputData.nameClinic,
                         note: inputData.note,
                         specialtyId: inputData.specialtyId,
-                        clinicId : inputData.clinicId
+                        clinicId: inputData.clinicId
                     })
                 }
                 resolve({
@@ -385,6 +385,49 @@ let getProfileDoctorByIdService = (inputId) => {
         }
     })
 }
+let getListPatientForDoctorService = (doctorId, date) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!doctorId || !date) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!'
+                })
+            } else {
+                let data = await db.Booking.findAll({
+                    where: {
+                        doctorId: doctorId,
+                        date: date,
+                        statusId: 'S2',
+                    },
+                    include: [
+                        {
+                            model: db.User, as: 'patientData', attributes: ['email', 'firstName', 'address', 'gender'],
+                            include: [
+                                {
+                                    model: db.Allcode, as: 'genderData', attributes: ['valueEn', 'valueVi']
+                                },
+                            ],
+                        },
+                        {
+                            model: db.Allcode, as: 'timeTypePatient', attributes: ['valueEn', 'valueVi']
+                        }
+
+                    ],
+                    raw: false,
+                    nest: true
+                })
+                resolve({
+                    errCode: 0,
+                    data: data
+                })
+            }
+
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
 module.exports = {
     getTopDoctorHomeService: getTopDoctorHomeService,
     getAllDoctors: getAllDoctors,
@@ -394,4 +437,5 @@ module.exports = {
     getScheduleByDateService: getScheduleByDateService,
     getExtraInforDoctorByIdService: getExtraInforDoctorByIdService,
     getProfileDoctorByIdService: getProfileDoctorByIdService,
+    getListPatientForDoctorService: getListPatientForDoctorService,
 }
