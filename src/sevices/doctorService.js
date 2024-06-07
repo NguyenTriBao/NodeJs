@@ -3,6 +3,7 @@ import db from '../models/index';
 import { raw } from 'body-parser';
 require('dotenv').config();
 import _, { includes, reject } from 'lodash';
+import emailService from './emailService';
 
 const MAX_NUMBER_SCHEDULE = process.env.MAX_NUMBER_SCHEDULE;
 
@@ -428,6 +429,43 @@ let getListPatientForDoctorService = (doctorId, date) => {
         }
     })
 }
+
+let sendRemedyService = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.doctorId || !data.patientId || !data.timeType 
+                || !data.language || !data.patientName || !data.email || !data.imgBase64
+             ) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!'
+                })
+            } else {
+                //upload patient
+                let res = await db.Booking.findOne({
+                    where: {
+                        doctorId: data.doctorId,
+                        patientId: data.patientId,
+                        timeType: data.timeType,
+                        statusId: 'S2'
+                    },
+                    raw: false,
+                })
+                res.statusId = 'S3'
+                await res.save();
+                //Send RemedyEmail
+                await emailService.sendRemedyEmail(data);
+                resolve({
+                    errCode: 0,
+                    data: res
+                })
+            }
+
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
 module.exports = {
     getTopDoctorHomeService: getTopDoctorHomeService,
     getAllDoctors: getAllDoctors,
@@ -438,4 +476,5 @@ module.exports = {
     getExtraInforDoctorByIdService: getExtraInforDoctorByIdService,
     getProfileDoctorByIdService: getProfileDoctorByIdService,
     getListPatientForDoctorService: getListPatientForDoctorService,
+    sendRemedyService, sendRemedyService,
 }
