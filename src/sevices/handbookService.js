@@ -45,7 +45,31 @@ let getAllHandbookService = () => {
         }
     })
 }
+let getDetailHandBookService = (inputIdid) => {
+    return new Promise( async (resolve, reject) => {
+        try {
+            let data = await db.Handbook.findOne({
+                where:{
+                    id : inputIdid
+                },
+                attributes: {
+                    exclude: ['image']
+                }
+            }
+            );
+            resolve({
+                errCode : 0,
+                data: data
+            })
+            
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
+
 module.exports = {
     createNewHandbookService: createNewHandbookService,
     getAllHandbookService: getAllHandbookService,
+    getDetailHandBookService: getDetailHandBookService,
 }

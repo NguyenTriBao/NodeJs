@@ -55,7 +55,7 @@ let initWebRoutes = (app) => {
 
     router.post('/api/create-new-handbook',handbookController.createNewHandbook);
     router.get('/api/get-all-handbook',handbookController.getAllHandbook);
-    // router.get('/api/detail-clinic',clinicController.getDetailClinic);
+    router.get('/api/detail-handbook',handbookController.getDetailHandBook);
     return app.use("/", router);
 }
 
